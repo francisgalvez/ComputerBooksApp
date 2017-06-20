@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2017 by Francis Gálvez -->
+<resources>
+    <!-- Title for the application. -->
+    <string name="app_name">Computer Books App</string>
+
+    <!-- Text to display in the list when there are no earthquakes -->
+    <string name="no_books">No books found.</string>
+
+    <!-- Error message when there is no internet connectivity -->
+    <string name="no_internet_connection">Ooops! We didn\'t found any Internet connection.</string>
+</resources>
