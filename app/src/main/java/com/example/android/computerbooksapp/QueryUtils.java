@@ -184,7 +184,11 @@ final class QueryUtils {
                 }
 
                 // Extract the value for the key called "publisher"
-                String publisher = volumeInfo.getString("publisher");
+                String publisher = "Unknown";
+
+                // Extract the value for the key called "authors"
+                if (volumeInfo.has("publisher"))
+                    publisher = volumeInfo.getString("publisher");
 
                 // Extract the value for the key called "url"
                 String url = volumeInfo.getString("infoLink");

@@ -22,36 +22,41 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
 public class BookActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<Book>> {
     /**
      * Constant value for the book loader ID. We can choose any integer.
      * This really only comes into play if you're using multiple loaders.
      */
     private static final int BOOK_LOADER_ID = 1;
-
-    /** Adapter for the list of books */
-    private BookAdapter adapter;
-
     /** SearchView displayed on the screen" */
-    private SearchView searchView;
-
-    /** Variable for the query searched by the user */
-    private String query;
-
+    @Bind(R.id.search)
+    SearchView searchView;
     /**
      * TextView that is displayed when there are no books to show
      */
-    private TextView noBooksTextView;
-
+    @Bind(R.id.no_books)
+    TextView noBooksTextView;
     /**
      * TextView that is displayed when there is no Internet connection
      */
-    private TextView noConnectionTextView;
-
+    @Bind(R.id.no_connection)
+    TextView noConnectionTextView;
     /**
      * TextView that is displayed when the user has no Internet connection
      */
-    private ImageView noWifiImageView;
+    @Bind(R.id.no_wifi_image)
+    ImageView noWifiImageView;
+    /**
+     * Adapter for the list of books
+     */
+    private BookAdapter adapter;
+    /**
+     * Variable for the query searched by the user
+     */
+    private String query;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,15 +66,12 @@ public class BookActivity extends AppCompatActivity implements LoaderManager.Loa
         // Find a reference to the {@link ListView} in the layout
         ListView bookListView = (ListView) findViewById(R.id.list);
 
-        noBooksTextView = (TextView) findViewById(R.id.no_books);
-        noConnectionTextView = (TextView) findViewById(R.id.no_connection);
-        noWifiImageView = (ImageView) findViewById(R.id.no_wifi_image);
+        ButterKnife.bind(this);
 
         noConnectionTextView.setText(R.string.no_internet_connection);
         noBooksTextView.setText(R.string.no_books);
 
-        //Get the SearchView and enable the Submit Button on it
-        searchView = (SearchView) findViewById(R.id.search);
+        //Enable the Submit Button on the SearchView
         searchView.setSubmitButtonEnabled(true);
 
         //bookListView.setEmptyView(noBooksTextView);
@@ -99,14 +101,6 @@ public class BookActivity extends AppCompatActivity implements LoaderManager.Loa
             }
         });
 
-        // Get a reference to the ConnectivityManager to check state of network connectivity
-        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        // Get details on the currently active default data network
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-
-        final boolean connected = networkInfo != null && networkInfo.isConnected();
-
         //Set an OnQueryTextListener to the search button
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
@@ -117,7 +111,7 @@ public class BookActivity extends AppCompatActivity implements LoaderManager.Loa
 
             @Override
             public boolean onQueryTextSubmit(String query) {
-                if (connected) {
+                if (isConnected()) {
                     // Get a reference to the LoaderManager, in order to interact with loaders.
                     LoaderManager loaderManager = getLoaderManager();
 
@@ -143,7 +137,7 @@ public class BookActivity extends AppCompatActivity implements LoaderManager.Loa
         });
 
         // If there is a network connection, fetch data
-        if (connected) {
+        if (isConnected()) {
             noConnectionTextView.setVisibility(View.GONE);
             noWifiImageView.setVisibility(View.GONE);
             noBooksTextView.setVisibility(View.GONE);
@@ -195,21 +189,15 @@ public class BookActivity extends AppCompatActivity implements LoaderManager.Loa
             adapter.addAll(books);
         }
 
-        // Get a reference to the ConnectivityManager to check state of network connectivity
-        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        // Get details on the currently active default data network
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-
-        final boolean connected = networkInfo != null && networkInfo.isConnected();
-
-        if (connected) {
+        if (isConnected() && books.isEmpty()) {
             noBooksTextView.setText(R.string.no_books);
-        } else {
+            noBooksTextView.setVisibility(View.VISIBLE);
+        }
+
+        if(!isConnected()){
             noConnectionTextView.setText(R.string.no_internet_connection);
             noWifiImageView.setVisibility(View.VISIBLE);
         }
-
     }
 
     @Override
@@ -231,5 +219,12 @@ public class BookActivity extends AppCompatActivity implements LoaderManager.Loa
         query = savedInstanceState.getString("query");
         //Initialize the Loader (execute the search)
         super.onRestoreInstanceState(savedInstanceState);
+    }
+
+    private boolean isConnected() {
+        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        // Get details on the currently active default data network
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        return networkInfo != null && networkInfo.isConnected();
     }
 }

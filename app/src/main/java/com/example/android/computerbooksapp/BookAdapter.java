@@ -43,29 +43,46 @@ class BookAdapter extends ArrayAdapter<Book> {
         // otherwise, if convertView is null, then inflate a new list item layout.
         View listItemView = convertView;
 
+        ViewHolder holder;
         if (listItemView == null) {
             listItemView = LayoutInflater.from(getContext()).inflate(R.layout.book_list_item, parent, false);
+
+            holder = new ViewHolder();
+
+            // Find the TextView with view ID title
+            holder.titleView = (TextView) listItemView.findViewById(R.id.title);
+
+            // Find the TextView with view ID author
+            holder.authorView = (TextView) listItemView.findViewById(R.id.author);
+
+            // Find the TextView with view ID author
+            holder.publisherView = (TextView) listItemView.findViewById(R.id.publisher);
+
+            listItemView.setTag(holder);
+        } else {
+            // view already exists, get the holder instance from the view
+            holder = (ViewHolder) listItemView.getTag();
         }
 
         // Find the book at the given position in the list of books
         Book currentBook = getItem(position);
 
-        // Find the TextView with view ID title
-        TextView titleView = (TextView) listItemView.findViewById(R.id.title);
         // Display the title of the current book in that TextView
-        titleView.setText(currentBook.getTitle());
+        holder.titleView.setText(currentBook.getTitle());
 
-        // Find the TextView with view ID author
-        TextView authorView = (TextView) listItemView.findViewById(R.id.author);
         // Display the author of the current book in that TextView
-        authorView.setText(currentBook.getAuthor());
+        holder.authorView.setText(currentBook.getAuthor());
 
-        // Find the TextView with view ID author
-        TextView publisherView = (TextView) listItemView.findViewById(R.id.publisher);
         // Display the publisher of the current book in that TextView
-        publisherView.setText(currentBook.getPublisher());
+        holder.publisherView.setText(currentBook.getPublisher());
 
         // Return the list item view that is now showing the appropriate data
         return listItemView;
+    }
+
+    private static class ViewHolder {
+        TextView titleView;
+        TextView authorView;
+        TextView publisherView;
     }
 }
