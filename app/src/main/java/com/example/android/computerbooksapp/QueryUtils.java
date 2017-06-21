@@ -170,14 +170,18 @@ final class QueryUtils {
                 // Extract the value for the key called "title"
                 String title = volumeInfo.getString("title");
 
+                String author = "Unknown";
+
                 // Extract the value for the key called "authors"
-                JSONArray authors = volumeInfo.getJSONArray("authors");
+                if (volumeInfo.has("authors")) {
+                    JSONArray authors = volumeInfo.getJSONArray("authors");
 
-                //We'll only extract the first author of each book
-                String author = authors.getString(0);
+                    //We'll only extract the first author of each book
+                    author = authors.getString(0);
 
-                if(authors.length() > 1)
-                    author += " and more";
+                    if (authors.length() > 1)
+                        author += " and more";
+                }
 
                 // Extract the value for the key called "publisher"
                 String publisher = volumeInfo.getString("publisher");

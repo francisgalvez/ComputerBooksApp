@@ -10,8 +10,8 @@ import android.content.Loader;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.view.View;
 import android.widget.AdapterView;
@@ -38,8 +38,20 @@ public class BookActivity extends AppCompatActivity implements LoaderManager.Loa
     /** Variable for the query searched by the user */
     private String query;
 
-    /** TextView that is displayed when the list is empty */
-    private TextView emptyStateTextView;
+    /**
+     * TextView that is displayed when there are no books to show
+     */
+    private TextView noBooksTextView;
+
+    /**
+     * TextView that is displayed when there is no Internet connection
+     */
+    private TextView noConnectionTextView;
+
+    /**
+     * TextView that is displayed when the user has no Internet connection
+     */
+    private ImageView noWifiImageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,17 +61,18 @@ public class BookActivity extends AppCompatActivity implements LoaderManager.Loa
         // Find a reference to the {@link ListView} in the layout
         ListView bookListView = (ListView) findViewById(R.id.list);
 
-        emptyStateTextView = (TextView) findViewById(R.id.empty_view);
+        noBooksTextView = (TextView) findViewById(R.id.no_books);
+        noConnectionTextView = (TextView) findViewById(R.id.no_connection);
+        noWifiImageView = (ImageView) findViewById(R.id.no_wifi_image);
+
+        noConnectionTextView.setText(R.string.no_internet_connection);
+        noBooksTextView.setText(R.string.no_books);
 
         //Get the SearchView and enable the Submit Button on it
         searchView = (SearchView) findViewById(R.id.search);
         searchView.setSubmitButtonEnabled(true);
 
-        /* ImageView that is displayed when there's no Internet connection */
-        ImageView noWifiImageView = (ImageView) findViewById(R.id.no_wifi_image);
-        noWifiImageView.setVisibility(View.GONE);
-
-        bookListView.setEmptyView(emptyStateTextView);
+        //bookListView.setEmptyView(noBooksTextView);
 
         // Create a new adapter that takes an empty list of books as input
         adapter = new BookAdapter(this, new ArrayList<Book>());
@@ -86,6 +99,14 @@ public class BookActivity extends AppCompatActivity implements LoaderManager.Loa
             }
         });
 
+        // Get a reference to the ConnectivityManager to check state of network connectivity
+        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        // Get details on the currently active default data network
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+
+        final boolean connected = networkInfo != null && networkInfo.isConnected();
+
         //Set an OnQueryTextListener to the search button
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
@@ -96,22 +117,37 @@ public class BookActivity extends AppCompatActivity implements LoaderManager.Loa
 
             @Override
             public boolean onQueryTextSubmit(String query) {
-                //Restart the Loader when the user executes the query
-                getLoaderManager().restartLoader(0, null, BookActivity.this);
+                if (connected) {
+                    // Get a reference to the LoaderManager, in order to interact with loaders.
+                    LoaderManager loaderManager = getLoaderManager();
 
-                return true;
+                    noConnectionTextView.setVisibility(View.GONE);
+                    noWifiImageView.setVisibility(View.GONE);
+                    noBooksTextView.setVisibility(View.GONE);
+
+                    // Restart the loader.
+                    loaderManager.restartLoader(BOOK_LOADER_ID, null, BookActivity.this);
+                    return true;
+                } else {
+                    // Otherwise, display error
+                    // First, hide loading indicator so error message will be visible
+                    View loadingIndicator = findViewById(R.id.loading_indicator);
+                    loadingIndicator.setVisibility(View.GONE);
+
+                    noConnectionTextView.setVisibility(View.VISIBLE);
+                    noWifiImageView.setVisibility(View.VISIBLE);
+                    noBooksTextView.setVisibility(View.GONE);
+                    return false;
+                }
             }
-
         });
 
-        // Get a reference to the ConnectivityManager to check state of network connectivity
-        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        // Get details on the currently active default data network
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-
         // If there is a network connection, fetch data
-        if (networkInfo != null && networkInfo.isConnected()) {
+        if (connected) {
+            noConnectionTextView.setVisibility(View.GONE);
+            noWifiImageView.setVisibility(View.GONE);
+            noBooksTextView.setVisibility(View.GONE);
+
             // Get a reference to the LoaderManager, in order to interact with loaders.
             LoaderManager loaderManager = getLoaderManager();
 
@@ -129,8 +165,9 @@ public class BookActivity extends AppCompatActivity implements LoaderManager.Loa
             searchView.setVisibility(View.GONE);
 
             // Update empty state with no connection error message
-            emptyStateTextView.setText(R.string.no_internet_connection);
+            noConnectionTextView.setVisibility(View.VISIBLE);
             noWifiImageView.setVisibility(View.VISIBLE);
+            noBooksTextView.setVisibility(View.GONE);
         }
     }
 
@@ -149,9 +186,6 @@ public class BookActivity extends AppCompatActivity implements LoaderManager.Loa
         View loadingIndicator = findViewById(R.id.loading_indicator);
         loadingIndicator.setVisibility(View.GONE);
 
-        // Set empty state text to display "No books found."
-        emptyStateTextView.setText(R.string.no_books);
-
         // Clear the adapter of previous book data
         adapter.clear();
 
@@ -160,6 +194,22 @@ public class BookActivity extends AppCompatActivity implements LoaderManager.Loa
         if (books != null && !books.isEmpty()) {
             adapter.addAll(books);
         }
+
+        // Get a reference to the ConnectivityManager to check state of network connectivity
+        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        // Get details on the currently active default data network
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+
+        final boolean connected = networkInfo != null && networkInfo.isConnected();
+
+        if (connected) {
+            noBooksTextView.setText(R.string.no_books);
+        } else {
+            noConnectionTextView.setText(R.string.no_internet_connection);
+            noWifiImageView.setVisibility(View.VISIBLE);
+        }
+
     }
 
     @Override
@@ -168,5 +218,18 @@ public class BookActivity extends AppCompatActivity implements LoaderManager.Loa
         adapter.clear();
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        //Get the query given by the user
+        query = searchView.getQuery().toString();
+        outState.putString("query", query);
+        super.onSaveInstanceState(outState);
+    }
 
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        query = savedInstanceState.getString("query");
+        //Initialize the Loader (execute the search)
+        super.onRestoreInstanceState(savedInstanceState);
+    }
 }
