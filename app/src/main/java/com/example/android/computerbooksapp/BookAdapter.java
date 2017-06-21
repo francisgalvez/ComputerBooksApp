@@ -4,6 +4,7 @@
 package com.example.android.computerbooksapp;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,11 +36,13 @@ class BookAdapter extends ArrayAdapter<Book> {
      * Returns a list item view that displays information about the book at the given position
      * in the list of books.
      */
+    @NonNull
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
         // Check if there is an existing list item view (called convertView) that we can reuse,
         // otherwise, if convertView is null, then inflate a new list item layout.
         View listItemView = convertView;
+
         if (listItemView == null) {
             listItemView = LayoutInflater.from(getContext()).inflate(R.layout.book_list_item, parent, false);
         }
@@ -47,33 +50,20 @@ class BookAdapter extends ArrayAdapter<Book> {
         // Find the book at the given position in the list of books
         Book currentBook = getItem(position);
 
-        // Get the title of the book
-        String title = currentBook.getTitle();
         // Find the TextView with view ID title
         TextView titleView = (TextView) listItemView.findViewById(R.id.title);
-        // Display the location of the current book in that TextView
-        titleView.setText(title);
+        // Display the title of the current book in that TextView
+        titleView.setText(currentBook.getTitle());
 
-        // Get the author of the book
-        String author = currentBook.getAuthor();
         // Find the TextView with view ID author
         TextView authorView = (TextView) listItemView.findViewById(R.id.author);
-        // Display the location offset of the current book in that TextView
-        authorView.setText(author);
+        // Display the author of the current book in that TextView
+        authorView.setText(currentBook.getAuthor());
 
-        // Get the publisher of the book
-        String publisher = currentBook.getPublisher();
         // Find the TextView with view ID author
         TextView publisherView = (TextView) listItemView.findViewById(R.id.publisher);
-        // Display the location offset of the current book in that TextView
-        publisherView.setText(publisher);
-
-        // Find the TextView with view ID date
-        TextView dateView = (TextView) listItemView.findViewById(R.id.published_date);
-        // Format the date string (i.e. "Mar 3, 1984")
-        String formattedDate = currentBook.getPublishedDate();
-        // Display the date of the current earthquake in that TextView
-        dateView.setText(formattedDate);
+        // Display the publisher of the current book in that TextView
+        publisherView.setText(currentBook.getPublisher());
 
         // Return the list item view that is now showing the appropriate data
         return listItemView;

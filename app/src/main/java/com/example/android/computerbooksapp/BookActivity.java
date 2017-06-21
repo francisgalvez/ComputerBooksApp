@@ -12,6 +12,7 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.SearchView;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageView;
@@ -22,13 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BookActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<Book>> {
-
-    //private static final String LOG_TAG = BookActivity.class.getName();
-
-    /** URL for book data from the USGS dataset */
-    private static final String REQUEST_URL =
-            "https://www.googleapis.com/books/v1/volumes?q=android&categories=Computers";
-
     /**
      * Constant value for the book loader ID. We can choose any integer.
      * This really only comes into play if you're using multiple loaders.
@@ -38,11 +32,14 @@ public class BookActivity extends AppCompatActivity implements LoaderManager.Loa
     /** Adapter for the list of books */
     private BookAdapter adapter;
 
-    /** TextView that is displayed when the list is empty */
-    private TextView emptyStateTextView;
+    /** SearchView displayed on the screen" */
+    private SearchView searchView;
+
+    /** Variable for the query searched by the user */
+    private String query;
 
     /** TextView that is displayed when the list is empty */
-    private ImageView noWifiImageView;
+    private TextView emptyStateTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +50,13 @@ public class BookActivity extends AppCompatActivity implements LoaderManager.Loa
         ListView bookListView = (ListView) findViewById(R.id.list);
 
         emptyStateTextView = (TextView) findViewById(R.id.empty_view);
-        noWifiImageView = (ImageView) findViewById(R.id.no_wifi_image);
+
+        //Get the SearchView and enable the Submit Button on it
+        searchView = (SearchView) findViewById(R.id.search);
+        searchView.setSubmitButtonEnabled(true);
+
+        /* ImageView that is displayed when there's no Internet connection */
+        ImageView noWifiImageView = (ImageView) findViewById(R.id.no_wifi_image);
         noWifiImageView.setVisibility(View.GONE);
 
         bookListView.setEmptyView(emptyStateTextView);
@@ -83,6 +86,24 @@ public class BookActivity extends AppCompatActivity implements LoaderManager.Loa
             }
         });
 
+        //Set an OnQueryTextListener to the search button
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                //Restart the Loader when the user executes the query
+                getLoaderManager().restartLoader(0, null, BookActivity.this);
+
+                return true;
+            }
+
+        });
+
         // Get a reference to the ConnectivityManager to check state of network connectivity
         ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
@@ -104,6 +125,9 @@ public class BookActivity extends AppCompatActivity implements LoaderManager.Loa
             View loadingIndicator = findViewById(R.id.loading_indicator);
             loadingIndicator.setVisibility(View.GONE);
 
+            // Also hide the search bar
+            searchView.setVisibility(View.GONE);
+
             // Update empty state with no connection error message
             emptyStateTextView.setText(R.string.no_internet_connection);
             noWifiImageView.setVisibility(View.VISIBLE);
@@ -112,8 +136,11 @@ public class BookActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public Loader<List<Book>> onCreateLoader(int i, Bundle bundle) {
+        //Get the query given by the user
+        query = searchView.getQuery().toString();
+
         // Create a new loader for the given URL
-        return new BookLoader(this, REQUEST_URL);
+        return new BookLoader(this, query);
     }
 
     @Override
@@ -140,4 +167,6 @@ public class BookActivity extends AppCompatActivity implements LoaderManager.Loa
         // Loader reset, so we can clear out our existing data.
         adapter.clear();
     }
+
+
 }

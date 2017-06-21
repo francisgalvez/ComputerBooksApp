@@ -17,9 +17,6 @@ class Book {
     /** Publisher of the book */
     private String publisher;
 
-    /** Date of publishing of the book */
-    private String publishedDate;
-
     /** Website URL of the book */
     private String url;
 
@@ -29,14 +26,12 @@ class Book {
      * @param title is the title of the book
      * @param author is the author of the book
      * @param publisher is the publisher of the book
-     * @param publishedDate is the date of publishing of the book
      * @param url is the website URL to find more details about the book
      */
-    Book(String title, String author, String publisher, String publishedDate, String url) {
+    Book(String title, String author, String publisher, String url) {
         this.title = title;
         this.author = author;
         this.publisher = publisher;
-        this.publishedDate = publishedDate;
         this.url = url;
     }
 
@@ -49,10 +44,6 @@ class Book {
 
     String getPublisher() {
         return publisher;
-    }
-
-    String getPublishedDate() {
-        return publishedDate;
     }
 
     String getUrl() { return url; }

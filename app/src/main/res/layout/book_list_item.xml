@@ -57,16 +57,10 @@
             android:layout_gravity="end"
             android:textColor="@color/dark_green"
             android:textSize="14sp"
-            tools:text="Marcombo" />
-
-        <TextView
-            android:id="@+id/published_date"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:textColor="@android:color/darker_gray"
-            android:textSize="12sp"
-            tools:text="01-03-2013" />
+            tools:text="Garret Wasny, MA,..."
+            android:ellipsize="end"
+            android:maxWidth="150dp"
+            android:maxLines="1"/>
 
     </LinearLayout>
 </LinearLayout>

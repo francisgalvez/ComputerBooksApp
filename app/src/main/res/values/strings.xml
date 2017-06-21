@@ -4,6 +4,9 @@
     <!-- Title for the application. -->
     <string name="app_name">Computer Books App</string>
 
+    <!-- Text to display in the search bar -->
+    <string name="search">Search a book...</string>
+
     <!-- Text to display in the list when there are no earthquakes -->
     <string name="no_books">No books found.</string>
 

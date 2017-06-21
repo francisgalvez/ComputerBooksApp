@@ -18,10 +18,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -43,12 +40,13 @@ final class QueryUtils {
     /**
      * Query the USGS dataset and return a list of {@link Book} objects.
      */
-    static List<Book> fetchBookData(String requestUrl) {
+    static List<Book> fetchBookData(String query) {
         // Create URL object
-        URL url = createUrl(requestUrl);
+        URL url = createUrl(query);
 
         // Perform HTTP request to the URL and receive a JSON response back
         String jsonResponse = null;
+
         try {
             jsonResponse = makeHttpRequest(url);
         } catch (IOException e) {
@@ -60,15 +58,17 @@ final class QueryUtils {
     }
 
     /**
-     * Returns new URL object from the given string URL.
+     * Returns new URL object from the query given by the user.
      */
-    private static URL createUrl(String stringUrl) {
+    private static URL createUrl(String query) {
         URL url = null;
+
         try {
-            url = new URL(stringUrl);
+            url = new URL("https://www.googleapis.com/books/v1/volumes?q=intitle:" + query + "&categories=Computers&maxResults=15");
         } catch (MalformedURLException e) {
             Log.e(LOG_TAG, "Problem building the URL ", e);
         }
+
         return url;
     }
 
@@ -85,10 +85,11 @@ final class QueryUtils {
 
         HttpURLConnection urlConnection = null;
         InputStream inputStream = null;
+
         try {
             urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setReadTimeout(10000 /* milliseconds */);
-            urlConnection.setConnectTimeout(15000 /* milliseconds */);
+            urlConnection.setReadTimeout(10000);
+            urlConnection.setConnectTimeout(15000);
             urlConnection.setRequestMethod("GET");
             urlConnection.connect();
 
@@ -119,6 +120,7 @@ final class QueryUtils {
      */
     private static String readFromStream(InputStream inputStream) throws IOException {
         StringBuilder output = new StringBuilder();
+
         if (inputStream != null) {
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charset.forName("UTF-8"));
             BufferedReader reader = new BufferedReader(inputStreamReader);
@@ -128,15 +130,16 @@ final class QueryUtils {
                 line = reader.readLine();
             }
         }
+
         return output.toString();
     }
 
     /**
      * Return a list of {@link Book} objects that has been built up from parsing the given JSON response.
      */
-    private static List<Book> extractFeatureFromJson(String BookJSON) {
+    private static List<Book> extractFeatureFromJson(String bookJSON) {
         // If the JSON string is empty or null, then return early.
-        if (TextUtils.isEmpty(BookJSON)) {
+        if (TextUtils.isEmpty(bookJSON)) {
             return null;
         }
 
@@ -149,7 +152,7 @@ final class QueryUtils {
         try {
 
             // Create a JSONObject from the JSON response string
-            JSONObject baseJsonResponse = new JSONObject(BookJSON);
+            JSONObject baseJsonResponse = new JSONObject(bookJSON);
 
             // Extract the JSONArray associated with the key called "features", which represents a list of features (or Books).
             JSONArray bookArray = baseJsonResponse.getJSONArray("items");
@@ -182,12 +185,9 @@ final class QueryUtils {
                 // Extract the value for the key called "url"
                 String url = volumeInfo.getString("infoLink");
 
-                // Extract de value for the key called "publishedDate"
-                String publishedDate = volumeInfo.getString("publishedDate");
-
                 // Create a new {@link Book} object with the magnitude, location, time,
                 // and url from the JSON response.
-                Book book = new Book(title, author, publisher, publishedDate, url);
+                Book book = new Book(title, author, publisher, url);
 
                 // Add the new {@link Book} to the list of Books.
                 books.add(book);
